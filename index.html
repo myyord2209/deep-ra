@@ -1,0 +1,981 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>อะไรเอ่ยอยู่ข้างใน ??</title>
+<link href="https://fonts.googleapis.com/css2?family=Mali:wght@300;400;500;600&family=Mitr:wght@300;400;500&family=Sarabun:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg1: #fff1f7;
+    --bg2: #f6ecff;
+    --bg3: #e8f4ff;
+    --pink: #ff7eb6;
+    --pink2: #ffb3d1;
+    --pink3: #ffe0ec;
+    --lav: #b794f6;
+    --lav2: #e4d6ff;
+    --text: #5a3a5f;
+    --text2: #8a6b90;
+    --text3: #b59bb9;
+    --border: rgba(255,126,182,0.28);
+    --border2: rgba(183,148,246,0.5);
+    --radius: 18px;
+    --r-sm: 14px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Mali', 'Sarabun', sans-serif;
+    color: var(--text);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1.5rem;
+    overflow-x: hidden;
+    background: linear-gradient(160deg, var(--bg1) 0%, var(--bg2) 55%, var(--bg3) 100%);
+    background-attachment: fixed;
+  }
+  /* soft glowing blobs */
+  body::before, body::after {
+    content: '';
+    position: fixed;
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 0;
+    filter: blur(40px);
+  }
+  body::before {
+    top: -15%; left: -15%; width: 60vmax; height: 60vmax;
+    background: radial-gradient(circle, rgba(255,126,182,0.28), transparent 70%);
+  }
+  body::after {
+    bottom: -20%; right: -15%; width: 60vmax; height: 60vmax;
+    background: radial-gradient(circle, rgba(183,148,246,0.28), transparent 70%);
+  }
+
+  /* falling hearts & flowers */
+  #fallLayer {
+    position: fixed; inset: 0;
+    pointer-events: none;
+    overflow: hidden;
+    z-index: 0;
+  }
+  .fall {
+    position: absolute;
+    top: -40px;
+    user-select: none;
+    will-change: transform, opacity;
+    animation: fall linear forwards;
+    filter: drop-shadow(0 2px 4px rgba(255,126,182,0.25));
+  }
+  @keyframes fall {
+    0%   { transform: translate3d(0,-10vh,0) rotate(0deg); opacity: 0; }
+    10%  { opacity: 0.95; }
+    50%  { transform: translate3d(var(--sway),50vh,0) rotate(var(--rot)); }
+    100% { transform: translate3d(calc(var(--sway) * -0.6),112vh,0) rotate(calc(var(--rot) * 2)); opacity: 0.85; }
+  }
+  .burst {
+    position: fixed;
+    pointer-events: none;
+    z-index: 50;
+    animation: burst 0.9s ease-out forwards;
+  }
+  @keyframes burst {
+    0%   { transform: translate(0,0) scale(0.4); opacity: 1; }
+    100% { transform: translate(var(--dx), var(--dy)) scale(1.1); opacity: 0; }
+  }
+
+  .container {
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    max-width: 520px;
+  }
+
+  /* Progress */
+  .progress-bar {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 1.6rem;
+    justify-content: center;
+  }
+  .prog-dot {
+    width: 9px; height: 9px;
+    border-radius: 50%;
+    background: var(--pink3);
+    border: 1px solid var(--border);
+    transition: all 0.4s;
+  }
+  .prog-dot.active { background: var(--pink); width: 26px; border-radius: 6px; border-color: var(--pink); }
+  .prog-dot.done { background: var(--lav); border-color: var(--lav); }
+
+  .page { display: none; }
+  .page.active { display: block; }
+
+  .card {
+    background: rgba(255,255,255,0.72);
+    border: 2px solid rgba(255,255,255,0.9);
+    border-radius: 28px;
+    padding: 2.4rem 2rem;
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    box-shadow: 0 12px 40px rgba(255,126,182,0.22), 0 2px 0 rgba(255,126,182,0.12);
+  }
+
+  .page-label {
+    font-family: 'Mitr', sans-serif;
+    font-size: 0.72rem;
+    letter-spacing: 0.12em;
+    color: var(--lav);
+    margin-bottom: 0.6rem;
+  }
+  .page-title {
+    font-family: 'Mitr', sans-serif;
+    font-size: 1.6rem;
+    font-weight: 500;
+    color: var(--text);
+    margin-bottom: 0.5rem;
+    line-height: 1.3;
+  }
+  .page-sub {
+    font-size: 0.92rem;
+    color: var(--text2);
+    margin-bottom: 1.6rem;
+    line-height: 1.7;
+  }
+
+  .example-box {
+    background: linear-gradient(135deg, rgba(255,224,236,0.7), rgba(228,214,255,0.5));
+    border: 1.5px dashed var(--pink2);
+    border-radius: var(--r-sm);
+    padding: 0.85rem 1rem;
+    margin-bottom: 1.4rem;
+    font-size: 0.84rem;
+    color: var(--text2);
+    line-height: 1.7;
+  }
+  .example-box strong { color: var(--pink); font-weight: 600; }
+  .example-box .ex-label {
+    font-size: 0.7rem;
+    letter-spacing: 0.1em;
+    color: var(--text3);
+    margin-bottom: 0.3rem;
+  }
+
+  input[type=text], textarea {
+    width: 100%;
+    background: rgba(255,255,255,0.9);
+    border: 1.5px solid var(--border2);
+    border-radius: var(--r-sm);
+    color: var(--text);
+    font-family: 'Mali', 'Sarabun', sans-serif;
+    font-size: 1rem;
+    padding: 0.85rem 1rem;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    resize: none;
+  }
+  input[type=text]:focus, textarea:focus {
+    border-color: var(--pink);
+    box-shadow: 0 0 0 4px rgba(255,126,182,0.15);
+  }
+  input::placeholder, textarea::placeholder { color: var(--text3); }
+
+  /* OTP */
+  .otp-row {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+    margin-bottom: 1.4rem;
+  }
+  .otp-cell {
+    width: 48px; height: 60px;
+    background: rgba(255,255,255,0.95);
+    border: 2px solid var(--border2);
+    border-radius: var(--r-sm);
+    font-size: 1.7rem;
+    font-family: 'Mitr', sans-serif;
+    color: var(--pink);
+    text-align: center;
+    outline: none;
+    transition: all 0.2s;
+  }
+  .otp-cell:focus { border-color: var(--pink); background: #fff; transform: translateY(-2px); box-shadow: 0 6px 14px rgba(255,126,182,0.25); }
+
+  /* Date */
+  .date-row {
+    display: grid;
+    grid-template-columns: 1fr 1.3fr 1fr;
+    gap: 10px;
+    margin-bottom: 1.4rem;
+  }
+  .date-col label {
+    display: block;
+    font-size: 0.78rem;
+    color: var(--text3);
+    margin-bottom: 6px;
+  }
+  select {
+    width: 100%;
+    background: rgba(255,255,255,0.95);
+    border: 1.5px solid var(--border2);
+    border-radius: var(--r-sm);
+    color: var(--text);
+    font-family: 'Mali', 'Sarabun', sans-serif;
+    font-size: 0.95rem;
+    padding: 0.7rem 0.6rem;
+    outline: none;
+    cursor: pointer;
+    transition: border-color 0.2s;
+  }
+  select:focus { border-color: var(--pink); }
+
+  /* Chips */
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 1.1rem; }
+  .chip {
+    padding: 0.5rem 1rem;
+    border-radius: 40px;
+    border: 1.5px solid var(--border2);
+    background: rgba(255,255,255,0.8);
+    color: var(--text2);
+    font-size: 0.88rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    user-select: none;
+  }
+  .chip:hover { border-color: var(--pink); color: var(--pink); transform: translateY(-1px); }
+  .chip.selected {
+    border-color: var(--pink);
+    background: linear-gradient(135deg, var(--pink), #ff9ccb);
+    color: #fff;
+    box-shadow: 0 4px 12px rgba(255,126,182,0.35);
+  }
+
+  /* Colors */
+  .color-grid { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 1.2rem; }
+  .color-swatch {
+    width: 46px; height: 46px;
+    border-radius: 50%;
+    cursor: pointer;
+    border: 3px solid #fff;
+    box-shadow: 0 2px 8px rgba(90,58,95,0.18);
+    transition: all 0.2s;
+    position: relative;
+  }
+  .color-swatch:hover { transform: scale(1.12); }
+  .color-swatch.selected { box-shadow: 0 0 0 3px var(--pink), 0 4px 12px rgba(255,126,182,0.4); }
+  .color-swatch.selected::after {
+    content: '✓';
+    position: absolute; inset: 0;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.1rem; color: #fff;
+    text-shadow: 0 1px 3px rgba(0,0,0,0.45);
+  }
+
+  .text-field { margin-bottom: 1.1rem; }
+  .field-label { font-size: 0.82rem; color: var(--text2); display: block; margin-bottom: 6px; }
+
+  .custom-input-row { display: flex; gap: 8px; margin-top: 8px; }
+  .custom-input-row input { flex: 1; }
+  .add-btn {
+    padding: 0.7rem 1rem;
+    background: var(--pink3);
+    border: 1.5px solid var(--pink2);
+    border-radius: var(--r-sm);
+    color: var(--pink);
+    font-family: 'Mali', sans-serif;
+    font-size: 0.88rem;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.2s;
+  }
+  .add-btn:hover { background: var(--pink2); color: #fff; }
+
+  .nav-row { display: flex; gap: 10px; margin-top: 1.4rem; }
+  .btn-next {
+    flex: 1;
+    padding: 1rem;
+    background: linear-gradient(135deg, var(--pink), var(--lav));
+    border: none;
+    border-radius: var(--r-sm);
+    color: #fff;
+    font-family: 'Mitr', sans-serif;
+    font-size: 1rem;
+    cursor: pointer;
+    box-shadow: 0 8px 20px rgba(255,126,182,0.38);
+    transition: transform 0.15s, box-shadow 0.2s, opacity 0.2s;
+  }
+  .btn-next:hover { transform: translateY(-2px); box-shadow: 0 12px 24px rgba(255,126,182,0.45); }
+  .btn-next:active { transform: scale(0.98); }
+  .btn-next:disabled { opacity: 0.6; cursor: wait; transform: none; }
+  .btn-back {
+    padding: 1rem 1.3rem;
+    background: rgba(255,255,255,0.8);
+    border: 1.5px solid var(--border2);
+    border-radius: var(--r-sm);
+    color: var(--text2);
+    font-family: 'Mali', sans-serif;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .btn-back:hover { border-color: var(--pink); color: var(--pink); }
+
+  .err { font-size: 0.82rem; color: #e11d6a; margin-top: 8px; display: none; }
+  .err.show { display: block; }
+
+  /* Postcard */
+  .postcard {
+    background: linear-gradient(135deg, #fff0f6 0%, #f0e6ff 100%);
+    border: 2px solid var(--pink2);
+    border-radius: 18px;
+    padding: 1.6rem 1.4rem;
+    margin-bottom: 1.2rem;
+    position: relative;
+    overflow: hidden;
+  }
+  .postcard::before {
+    content: '';
+    position: absolute; top: -30px; right: -30px;
+    width: 120px; height: 120px; border-radius: 50%;
+    background: rgba(255,126,182,0.15);
+  }
+  .postcard-stamp {
+    position: absolute; top: 1rem; right: 1rem;
+    width: 44px; height: 54px;
+    border: 2px dashed var(--pink);
+    border-radius: 6px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.4rem;
+    background: #fff;
+  }
+  .postcard-label { font-size: 0.66rem; letter-spacing: 0.12em; color: var(--text3); margin-bottom: 0.4rem; }
+  .postcard-unlock { font-family: 'Mitr', sans-serif; font-size: 1.1rem; color: var(--pink); margin-bottom: 0.5rem; }
+  .postcard-line { height: 1px; background: var(--border); margin: 0.6rem 0; }
+
+  /* Final */
+  .final-icon { font-size: 3.6rem; text-align: center; margin-bottom: 0.8rem; animation: beat 1.4s ease-in-out infinite; }
+  @keyframes beat { 0%,100% { transform: scale(1); } 15% { transform: scale(1.18); } 30% { transform: scale(1); } 45% { transform: scale(1.12); } }
+  .final-title { font-family: 'Mitr', sans-serif; font-size: 1.5rem; text-align: center; color: var(--pink); margin-bottom: 0.75rem; }
+  .final-sub { text-align: center; color: var(--text2); font-size: 0.92rem; line-height: 1.8; }
+  .status-box {
+    margin-top: 1.4rem;
+    padding: 1rem;
+    border-radius: var(--r-sm);
+    font-size: 0.88rem;
+    line-height: 1.7;
+    text-align: center;
+  }
+  .status-sending { background: var(--lav2); color: var(--text2); }
+  .status-ok { background: #e6f9ee; color: #1f7a45; }
+  .status-fail { background: #fff3e0; color: #9a5b00; text-align: left; }
+  .copy-area {
+    width: 100%; margin-top: 0.8rem;
+    font-size: 0.78rem !important;
+    min-height: 130px;
+  }
+  .btn-copy {
+    margin-top: 0.7rem; width: 100%;
+    padding: 0.8rem;
+    border: none; border-radius: var(--r-sm);
+    background: linear-gradient(135deg, var(--pink), var(--lav));
+    color: #fff; font-family: 'Mitr', sans-serif; font-size: 0.95rem; cursor: pointer;
+  }
+
+  @keyframes fadeSlide { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: translateY(0); } }
+  .page.active .card { animation: fadeSlide 0.4s ease; }
+
+  @media (max-width: 420px) {
+    .card { padding: 2rem 1.3rem; }
+    .otp-cell { width: 42px; height: 54px; font-size: 1.5rem; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    #fallLayer { display: none; }
+    .final-icon { animation: none; }
+  }
+</style>
+</head>
+<body>
+<div id="fallLayer"></div>
+
+<div class="container">
+  <div class="progress-bar" id="progressBar">
+    <div class="prog-dot active" id="dot0"></div>
+    <div class="prog-dot" id="dot1"></div>
+    <div class="prog-dot" id="dot2"></div>
+    <div class="prog-dot" id="dot3"></div>
+    <div class="prog-dot" id="dot4"></div>
+    <div class="prog-dot" id="dot5"></div>
+    <div class="prog-dot" id="dot6"></div>
+    <div class="prog-dot" id="dot7"></div>
+    <div class="prog-dot" id="dot8"></div>
+    <div class="prog-dot" id="dot9"></div>
+  </div>
+
+  <!-- PAGE 1 -->
+  <div class="page active" id="page0">
+    <div class="card">
+      <div class="page-label">หน้า 1 จาก 10</div>
+      <div class="page-title">🔐 Unlock</div>
+      <div class="page-sub">สวัสดีครับอ้วน 💕 </div>
+      <div class="postcard">
+        <div class="postcard-stamp">🌸</div>
+        <div class="postcard-label">โปสการ์ด · POSTCARD</div>
+        <div class="postcard-unlock">รหัสเพื่อเปิดความในใจ</div>
+        <div class="postcard-line"></div>
+        <div style="font-size:0.8rem; color:var(--text2); line-height:1.7">
+          กรอกรหัส 6 ตัวเลขที่เราคุยกันวันแรกใน อจ<br>เพื่อปลดล็อคคำถาม  💕
+        </div>
+      </div>
+      <div class="otp-row" id="otpRow">
+        <input class="otp-cell" id="o0" maxlength="1" type="text" inputmode="numeric">
+        <input class="otp-cell" id="o1" maxlength="1" type="text" inputmode="numeric">
+        <input class="otp-cell" id="o2" maxlength="1" type="text" inputmode="numeric">
+        <input class="otp-cell" id="o3" maxlength="1" type="text" inputmode="numeric">
+        <input class="otp-cell" id="o4" maxlength="1" type="text" inputmode="numeric">
+        <input class="otp-cell" id="o5" maxlength="1" type="text" inputmode="numeric">
+      </div>
+      <div class="err" id="err0">กรุณากรอกรหัส 6 หลักให้ครบถ้วน</div>
+      <div class="nav-row">
+        <button class="btn-next" onclick="nextPage(0)">ปลดล็อค 💗</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- PAGE 2 -->
+  <div class="page" id="page1">
+    <div class="card">
+      <div class="page-label">หน้า 2 จาก 10</div>
+      <div class="page-title">🎂 วันเกิดของคุณ</div>
+      <div class="page-sub">เลือกวัน เดือน และปีเกิดของคุณ</div>
+      <div class="example-box">
+      </div>
+      <div class="date-row">
+        <div class="date-col"><label>วัน</label><select id="bday"></select></div>
+        <div class="date-col"><label>เดือน</label><select id="bmonth"></select></div>
+        <div class="date-col"><label>ปี (พ.ศ.)</label><select id="byear"></select></div>
+      </div>
+      <div class="err" id="err1">กรุณาเลือกวันเกิดให้ครบ</div>
+      <div class="nav-row">
+        <button class="btn-back" onclick="prevPage(1)">← กลับ</button>
+        <button class="btn-next" onclick="nextPage(1)">ถัดไป →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- PAGE 3 -->
+  <div class="page" id="page2">
+    <div class="card">
+      <div class="page-label">หน้า 3 จาก 10</div>
+      <div class="page-title">🎨 สีที่ชอบ</div>
+      <div class="page-sub">เลือกสีที่ชื่นชอบได้มากกว่าหนึ่งสี</div>
+      <div class="example-box">
+        <div class="ex-label">ตัวอย่าง</div>
+        เช่น ชอบ <strong>สีม่วง</strong> กับ <strong>สีฟ้า</strong> เพราะให้ความรู้สึกสงบ
+      </div>
+      <div class="color-grid" id="colorGrid"></div>
+      <div class="err" id="err2">กรุณาเลือกสีอย่างน้อย 1 สี</div>
+      <div class="nav-row">
+        <button class="btn-back" onclick="prevPage(2)">← กลับ</button>
+        <button class="btn-next" onclick="nextPage(2)">ถัดไป →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- PAGE 4 -->
+  <div class="page" id="page3">
+    <div class="card">
+      <div class="page-label">หน้า 4 จาก 10</div>
+      <div class="page-title">🍜 แนวอาหารที่ชอบ</div>
+      <div class="page-sub">เลือกได้หลายอย่าง หรือพิมพ์เพิ่มเองได้</div>
+      <div class="example-box">
+        <div class="ex-label">ตัวอย่าง</div>
+        เช่น <strong>อาหารไทย</strong>, <strong>ซูชิ</strong>, ชอบของหวานที่ไม่หวานมาก
+      </div>
+      <div class="chips" id="foodChips"></div>
+      <div class="custom-input-row">
+        <input type="text" id="foodCustom" placeholder="เพิ่มเองเช่น ก๋วยเตี๋ยวเรือ, ส้มตำ...">
+        <button class="add-btn" onclick="addCustomChip('food')">+ เพิ่ม</button>
+      </div>
+      <div class="err" id="err3">กรุณาเลือกหรือพิมพ์แนวอาหารอย่างน้อย 1 อย่าง</div>
+      <div class="nav-row">
+        <button class="btn-back" onclick="prevPage(3)">← กลับ</button>
+        <button class="btn-next" onclick="nextPage(3)">ถัดไป →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- PAGE 5 -->
+  <div class="page" id="page4">
+    <div class="card">
+      <div class="page-label">หน้า 5 จาก 10</div>
+      <div class="page-title">✈️ ชอบเที่ยวแบบไหน</div>
+      <div class="page-sub">เลือกได้หลายอย่าง หรือพิมพ์เพิ่มเองได้</div>
+      <div class="example-box">
+        <div class="ex-label">ตัวอย่าง</div>
+        เช่น ชอบ <strong>ทะเล</strong> กับ <strong>น้ำตก</strong> แต่ไม่ชอบที่แออัด
+      </div>
+      <div class="chips" id="tripChips"></div>
+      <div class="custom-input-row">
+        <input type="text" id="tripCustom" placeholder="เพิ่มเองเช่น ต่างประเทศ, ที่เงียบๆ...">
+        <button class="add-btn" onclick="addCustomChip('trip')">+ เพิ่ม</button>
+      </div>
+      <div class="err" id="err4">กรุณาเลือกหรือพิมพ์การเที่ยวอย่างน้อย 1 อย่าง</div>
+      <div class="nav-row">
+        <button class="btn-back" onclick="prevPage(4)">← กลับ</button>
+        <button class="btn-next" onclick="nextPage(4)">ถัดไป →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- PAGE 6 -->
+  <div class="page" id="page5">
+    <div class="card">
+      <div class="page-label">หน้า 6 จาก 10</div>
+      <div class="page-title">🌟 ชอบทำอะไร</div>
+      <div class="page-sub">เลือกสิ่งที่ทำแล้วมีความสุข ได้หลายอย่างเลย</div>
+      <div class="example-box">
+        <div class="ex-label">ตัวอย่าง</div>
+        เช่น ชอบ <strong>ดูหนัง</strong>, <strong>นอน</strong>, แล้วก็ชอบไปเดินตลาดนัดตอนค่ำ
+      </div>
+      <div class="chips" id="actChips"></div>
+      <div class="custom-input-row">
+        <input type="text" id="actCustom" placeholder="เพิ่มเองเช่น ทำขนม, วาดรูป...">
+        <button class="add-btn" onclick="addCustomChip('act')">+ เพิ่ม</button>
+      </div>
+      <div class="err" id="err5">กรุณาเลือกหรือพิมพ์กิจกรรมอย่างน้อย 1 อย่าง</div>
+      <div class="nav-row">
+        <button class="btn-back" onclick="prevPage(5)">← กลับ</button>
+        <button class="btn-next" onclick="nextPage(5)">ถัดไป →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- PAGE 7 -->
+  <div class="page" id="page6">
+    <div class="card">
+      <div class="page-label">หน้า 7 จาก 10</div>
+      <div class="page-title">💜 ชอบคนแบบไหน</div>
+      <div class="page-sub">เขียนอธิบายได้เลย ไม่ต้องกลัวว่าจะยาวหรือสั้นเกินไป</div>
+      <div class="example-box">
+        <div class="ex-label">ตัวอย่าง</div>
+        เช่น "ชอบคนที่เข้าใจเรา ไม่ต้องพูดมากก็รู้ใจ ชอบคนตลก แต่ไม่ตลกแบบเกินไป"
+      </div>
+      <div class="text-field">
+        <textarea id="typeInput" rows="5" placeholder="เขียนได้เลย..."></textarea>
+      </div>
+      <div class="err" id="err6">กรุณากรอกข้อมูล</div>
+      <div class="nav-row">
+        <button class="btn-back" onclick="prevPage(6)">← กลับ</button>
+        <button class="btn-next" onclick="nextPage(6)">ถัดไป →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- PAGE 8 -->
+  <div class="page" id="page7">
+    <div class="card">
+      <div class="page-label">หน้า 8 จาก 10</div>
+      <div class="page-title">🗣️ Deep Talk</div>
+      <div class="page-sub">เรื่องที่ผมทำแล้วพี่ชอบ และเรื่องที่ผมทำแล้วพี่ไม่ชอบ</div>
+      <div class="example-box">
+        <div class="ex-label">ตัวอย่าง</div>
+        <strong>ชอบ:</strong> "ชอบที่เวลาห่วงใยแล้วแสดงออกมา ชอบที่ตลกแบบ timing ดี"<br>
+        <strong>ไม่ชอบ:</strong> "ไม่ชอบตอนที่พูดขาดประโยคกัน หรือเวลาเสียงดังตอนเถียง"
+      </div>
+      <div class="text-field">
+        <label class="field-label">สิ่งที่ชอบ 💚</label>
+        <textarea id="likeInput" rows="3" placeholder="เรื่องที่พี่ชอบตอนผมทำ..."></textarea>
+      </div>
+      <div class="text-field">
+        <label class="field-label">สิ่งที่ไม่ชอบ 🔴</label>
+        <textarea id="dislikeInput" rows="3" placeholder="เรื่องที่พี่ไม่ชอบตอนผมทำ..."></textarea>
+      </div>
+      <div class="err" id="err7">กรุณากรอกอย่างน้อยหนึ่งช่อง</div>
+      <div class="nav-row">
+        <button class="btn-back" onclick="prevPage(7)">← กลับ</button>
+        <button class="btn-next" onclick="nextPage(7)">ถัดไป →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- PAGE 9 -->
+  <div class="page" id="page8">
+    <div class="card">
+      <div class="page-label">หน้า 9 จาก 10</div>
+      <div class="page-title">💬 ถ้าเผลอทำสิ่งที่ไม่ชอบ...</div>
+      <div class="page-sub">พี่จะบอกยังไง? อยากให้บอกแบบไหน</div>
+      <div class="example-box">
+        <div class="ex-label">ตัวอย่าง</div>
+        เช่น "บอกตรงๆ เลย ไม่ต้องอ้อมค้อม" หรือ "ขอให้ค่อยๆ พูด อย่าพูดตอนอารมณ์ขึ้น"
+      </div>
+      <div class="text-field">
+        <textarea id="tellInput" rows="5" placeholder="วิธีที่อยากให้บอก..."></textarea>
+      </div>
+      <div class="err" id="err8">กรุณากรอกข้อมูล</div>
+      <div class="nav-row">
+        <button class="btn-back" onclick="prevPage(8)">← กลับ</button>
+        <button class="btn-next" onclick="nextPage(8)">ถัดไป →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- PAGE 10 -->
+  <div class="page" id="page9">
+    <div class="card">
+      <div class="page-label">หน้า 10 จาก 10</div>
+      <div class="page-title">✨ มีอะไรอยากบอกไหม?</div>
+      <div class="page-sub">เรื่องที่ไม่กล้าพูด หรืออยากให้ปรับอะไร บอกได้เลย</div>
+      <div class="example-box">
+        <div class="ex-label">ตัวอย่าง</div>
+        เช่น "อยากให้ใช้เวลาด้วยกันมากขึ้น" หรือ "มีเรื่องนึงที่อยากพูดมานานแล้วแต่ยังไม่กล้า..."
+      </div>
+      <div class="text-field">
+        <textarea id="finalInput" rows="6" placeholder="พิมพ์ได้เลย ที่นี่ปลอดภัย..."></textarea>
+      </div>
+      <div class="err" id="err9">กรุณากรอกข้อมูล</div>
+      <div class="nav-row">
+        <button class="btn-back" onclick="prevPage(9)">← กลับ</button>
+        <button class="btn-next" id="submitBtn" onclick="submitAll()">ส่งความในใจ 💜</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Final -->
+  <div class="page" id="pageFinal">
+    <div class="card">
+      <div class="final-icon">💜</div>
+      <div class="final-title">ขอบคุณที่เปิดใจ</div>
+      <div class="final-sub">
+        ขอบคุณที่ไว้วางใจและกล้าบอกความในใจ<br>
+        <span style="color:var(--pink)">ขอบคุณนะค้าบที่เข้ามาเล่น จุ๊ฟม้วฟฟ 🌸</span>
+      </div>
+      <div id="statusBox"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* =====================================================================
+   ตั้งค่าตรงนี้ (สำคัญ!)  ── วิธีรับคำตอบทางอีเมล (ฟรี ไม่ต้องมีเซิร์ฟเวอร์)
+   1) เข้า https://web3forms.com  → ใส่อีเมลของคุณ → กด Create Access Key
+   2) ระบบจะส่ง Access Key ไปที่อีเมล → คัดลอกมาวางแทนข้อความด้านล่าง
+   3) เปิดไฟล์นี้ผ่านโฮสต์ใดๆ (เช่น Netlify Drop, GitHub Pages) แล้วส่งลิงก์ให้ผู้ตอบ
+   ทุกครั้งที่มีคนกดส่ง คำตอบทั้งหมดจะเข้าอีเมลคุณ
+   ===================================================================== */
+var CONFIG = {
+  ACCESS_KEY: '7b07699d-1f8e-40f8-a188-a547178e0fc3',
+  UNLOCK_CODE: '030869',
+  SUBJECT: '💌 มีคนตอบ Deep Talk ถึงคุณแล้ว!'
+};
+
+/* ---------- ข้อมูล ---------- */
+var currentPage = 0;
+var totalPages = 10;
+var months = ['มกราคม','กุมภาพันธ์','มีนาคม','เมษายน','พฤษภาคม','มิถุนายน','กรกฎาคม','สิงหาคม','กันยายน','ตุลาคม','พฤศจิกายน','ธันวาคม'];
+
+var colors = [
+  {name:'แดง', hex:'#ef4444'},{name:'ส้ม', hex:'#f97316'},
+  {name:'เหลือง', hex:'#eab308'},{name:'เขียว', hex:'#22c55e'},
+  {name:'เขียวเข้ม', hex:'#16a34a'},{name:'ฟ้า', hex:'#06b6d4'},
+  {name:'น้ำเงิน', hex:'#3b82f6'},{name:'ม่วง', hex:'#8b5cf6'},
+  {name:'ชมพู', hex:'#ec4899'},{name:'แดงเลือดหมู', hex:'#dc2626'},
+  {name:'น้ำตาล', hex:'#92400e'},{name:'ดำ', hex:'#1e1e2e'},
+  {name:'เทา', hex:'#9ca3af'},{name:'ขาว', hex:'#f3f4f6'},
+  {name:'ทอง', hex:'#f59e0b'},{name:'ครีม', hex:'#fde68a'}
+];
+var selectedColors = [];
+
+var foods = ['อาหารไทย','อาหารญี่ปุ่น','อาหารเกาหลี','อาหารจีน','อาหารอิตาเลียน','อาหารอเมริกัน','อาหารทะเล','ก๋วยเตี๋ยว','ข้าวมันไก่','ส้มตำ','ชาบู','บาร์บีคิว','ของหวาน','ขนมไทย','ผลไม้','มังสวิรัติ'];
+var selectedFoods = [];
+var trips = ['ทะเล','ภูเขา','น้ำตก','เดินป่า','ดำน้ำ','ถ้ำ','ต่างประเทศ','ในเมือง','ชนบท','ตลาดเก่า','วัด','ที่เงียบๆ','แคมป์ปิ้ง','สวนสนุก'];
+var selectedTrips = [];
+var acts = ['ดูหนัง','ฟังเพลง','อ่านหนังสือ','ออกกำลังกาย','เดินตลาด','กิน','นอน','เล่นเกม','ถ่ายรูป','ท่องเที่ยว','ทำอาหาร','วาดรูป','ดูซีรีส์','ช็อปปิ้ง','เล่นกีฬา','ทำสวน'];
+var selectedActs = [];
+
+/* ---------- เริ่มต้นหน้า ---------- */
+function initPage() {
+  var otp = document.querySelectorAll('.otp-cell');
+  otp.forEach(function(el, i) {
+    el.addEventListener('input', function() {
+      this.value = this.value.replace(/\D/g, '');
+      if (this.value && i < otp.length - 1) otp[i+1].focus();
+    });
+    el.addEventListener('keydown', function(e) {
+      if (e.key === 'Backspace' && !this.value && i > 0) otp[i-1].focus();
+      if (e.key === 'Enter') nextPage(0);
+    });
+    el.addEventListener('paste', function(e) {
+      var t = (e.clipboardData || window.clipboardData).getData('text').replace(/\D/g, '');
+      if (!t) return;
+      e.preventDefault();
+      for (var k = 0; k < otp.length; k++) otp[k].value = t[k] || '';
+      otp[Math.min(t.length, otp.length) - 1].focus();
+    });
+  });
+
+  var dayEl = document.getElementById('bday');
+  var mo = document.getElementById('bmonth');
+  var yr = document.getElementById('byear');
+  dayEl.innerHTML = '<option value="">วัน</option>';
+  for (var d = 1; d <= 31; d++) { var o = document.createElement('option'); o.value = d; o.text = d; dayEl.appendChild(o); }
+  mo.innerHTML = '<option value="">เดือน</option>';
+  months.forEach(function(m, i) { var o = document.createElement('option'); o.value = i + 1; o.text = m; mo.appendChild(o); });
+  yr.innerHTML = '<option value="">ปี</option>';
+  var now = new Date().getFullYear() + 543;
+  for (var y = now; y >= now - 80; y--) { var o = document.createElement('option'); o.value = y; o.text = y; yr.appendChild(o); }
+
+  var cg = document.getElementById('colorGrid');
+  colors.forEach(function(c, i) {
+    var s = document.createElement('div');
+    s.className = 'color-swatch';
+    s.title = c.name;
+    s.style.background = c.hex;
+    s.onclick = function() {
+      var idx = selectedColors.indexOf(i);
+      if (idx > -1) { selectedColors.splice(idx, 1); s.classList.remove('selected'); }
+      else { selectedColors.push(i); s.classList.add('selected'); }
+    };
+    cg.appendChild(s);
+  });
+
+  renderChips('foodChips', foods, selectedFoods);
+  renderChips('tripChips', trips, selectedTrips);
+  renderChips('actChips', acts, selectedActs);
+
+  [['foodCustom','food'],['tripCustom','trip'],['actCustom','act']].forEach(function(p) {
+    document.getElementById(p[0]).addEventListener('keydown', function(e) {
+      if (e.key === 'Enter') { e.preventDefault(); addCustomChip(p[1]); }
+    });
+  });
+}
+
+function renderChips(containerId, items, selectedArr) {
+  var c = document.getElementById(containerId);
+  c.innerHTML = '';
+  items.forEach(function(item, i) {
+    var chip = document.createElement('div');
+    chip.className = 'chip' + (selectedArr.indexOf(i) > -1 ? ' selected' : '');
+    chip.textContent = item;
+    chip.onclick = function() {
+      var idx = selectedArr.indexOf(i);
+      if (idx > -1) { selectedArr.splice(idx, 1); chip.classList.remove('selected'); }
+      else { selectedArr.push(i); chip.classList.add('selected'); }
+    };
+    c.appendChild(chip);
+  });
+}
+
+function addCustomChip(type) {
+  var configs = {
+    food: {input:'foodCustom', arr:foods, sel:selectedFoods, container:'foodChips'},
+    trip: {input:'tripCustom', arr:trips, sel:selectedTrips, container:'tripChips'},
+    act:  {input:'actCustom',  arr:acts,  sel:selectedActs,  container:'actChips'}
+  };
+  var cfg = configs[type];
+  var val = document.getElementById(cfg.input).value.trim();
+  if (!val) return;
+  cfg.arr.push(val);
+  cfg.sel.push(cfg.arr.length - 1);
+  renderChips(cfg.container, cfg.arr, cfg.sel);
+  document.getElementById(cfg.input).value = '';
+}
+
+/* ---------- ตรวจข้อมูล / เปลี่ยนหน้า ---------- */
+function val(id) { return document.getElementById(id).value.trim(); }
+
+function validate(page) {
+  var err = document.getElementById('err' + page);
+  err.classList.remove('show');
+  var ok = true;
+  if (page === 0) {
+    var code = getOtp();
+    ok = code === CONFIG.UNLOCK_CODE;
+    err.textContent = code.length < 6 ? 'กรุณากรอกรหัส 6 หลักให้ครบถ้วน' : 'รหัสไม่ถูกต้อง ลองดูอีกครั้งนะ 💗';
+  }
+  else if (page === 1) { ok = val('bday') && val('bmonth') && val('byear'); }
+  else if (page === 2) { ok = selectedColors.length > 0; }
+  else if (page === 3) { ok = selectedFoods.length > 0; }
+  else if (page === 4) { ok = selectedTrips.length > 0; }
+  else if (page === 5) { ok = selectedActs.length > 0; }
+  else if (page === 6) { ok = !!val('typeInput'); }
+  else if (page === 7) { ok = val('likeInput') || val('dislikeInput'); }
+  else if (page === 8) { ok = !!val('tellInput'); }
+  else if (page === 9) { ok = !!val('finalInput'); }
+  if (!ok) err.classList.add('show');
+  return !!ok;
+}
+
+function getOtp() {
+  var s = '';
+  for (var i = 0; i < 6; i++) s += document.getElementById('o' + i).value;
+  return s;
+}
+
+function nextPage(current) {
+  if (!validate(current)) return;
+  document.getElementById('page' + current).classList.remove('active');
+  currentPage = current + 1;
+  document.getElementById('page' + currentPage).classList.add('active');
+  updateProgress();
+  window.scrollTo(0, 0);
+}
+function prevPage(current) {
+  document.getElementById('page' + current).classList.remove('active');
+  currentPage = current - 1;
+  document.getElementById('page' + currentPage).classList.add('active');
+  updateProgress();
+  window.scrollTo(0, 0);
+}
+function updateProgress() {
+  for (var i = 0; i < totalPages; i++) {
+    var dot = document.getElementById('dot' + i);
+    dot.classList.remove('active', 'done');
+    if (i === currentPage) dot.classList.add('active');
+    else if (i < currentPage) dot.classList.add('done');
+  }
+}
+
+/* ---------- รวบรวมคำตอบ ---------- */
+function collectAnswers() {
+  return [
+    ['1. รหัสที่กรอก', getOtp()],
+    ['2. วันเกิด', val('bday') + ' ' + months[val('bmonth') - 1] + ' ' + val('byear')],
+    ['3. สีที่ชอบ', selectedColors.map(function(i){ return colors[i].name; }).join(', ')],
+    ['4. แนวอาหารที่ชอบ', selectedFoods.map(function(i){ return foods[i]; }).join(', ')],
+    ['5. ชอบเที่ยวแบบไหน', selectedTrips.map(function(i){ return trips[i]; }).join(', ')],
+    ['6. ชอบทำอะไร', selectedActs.map(function(i){ return acts[i]; }).join(', ')],
+    ['7. ชอบคนแบบไหน', val('typeInput')],
+    ['8a. สิ่งที่ชอบ', val('likeInput') || '(ไม่ได้กรอก)'],
+    ['8b. สิ่งที่ไม่ชอบ', val('dislikeInput') || '(ไม่ได้กรอก)'],
+    ['9. อยากให้บอกยังไงถ้าเผลอทำสิ่งที่ไม่ชอบ', val('tellInput')],
+    ['10. สิ่งที่อยากบอก', val('finalInput')],
+    ['เวลาที่ส่ง', new Date().toLocaleString('th-TH')]
+  ];
+}
+function toPlainText(rows) {
+  return rows.map(function(r){ return r[0] + '\n' + r[1]; }).join('\n\n');
+}
+
+/* ---------- ส่งคำตอบ ---------- */
+function submitAll() {
+  if (!validate(9)) return;
+  var btn = document.getElementById('submitBtn');
+  btn.disabled = true;
+  btn.textContent = 'กำลังส่ง...';
+
+  var rows = collectAnswers();
+  var text = toPlainText(rows);
+
+  // สำรองไว้ในเครื่องผู้ตอบเผื่อส่งไม่สำเร็จ
+  try { localStorage.setItem('deeptalk_backup', text); } catch (e) {}
+
+  document.getElementById('page9').classList.remove('active');
+  document.getElementById('pageFinal').classList.add('active');
+  document.getElementById('progressBar').style.display = 'none';
+  window.scrollTo(0, 0);
+  heartRain(40);
+
+  var box = document.getElementById('statusBox');
+
+  if (!CONFIG.ACCESS_KEY || CONFIG.ACCESS_KEY.indexOf('ใส่_') === 0) {
+    showFallback(box, text, 'ยังไม่ได้ตั้งค่า Access Key ในไฟล์ (ดูคอมเมนต์ในส่วน CONFIG)');
+    return;
+  }
+
+  box.innerHTML = '<div class="status-box status-sending">กำลังส่งความในใจ... 💌</div>';
+
+  var payload = { access_key: CONFIG.ACCESS_KEY, subject: CONFIG.SUBJECT, from_name: 'Deep Talk' };
+  rows.forEach(function(r) { payload[r[0]] = r[1]; });
+
+  fetch('https://api.web3forms.com/submit', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+    body: JSON.stringify(payload)
+  })
+  .then(function(res) { return res.json(); })
+  .then(function(data) {
+    if (data && data.success) {
+      box.innerHTML = '<div class="status-box status-ok">ส่งความในใจเรียบร้อยแล้ว ✓ 💗</div>';
+      try { localStorage.removeItem('deeptalk_backup'); } catch (e) {}
+    } else {
+      showFallback(box, text, (data && data.message) || 'ส่งไม่สำเร็จ');
+    }
+  })
+  .catch(function() { showFallback(box, text, 'เชื่อมต่ออินเทอร์เน็ตไม่ได้'); });
+}
+
+function showFallback(box, text, reason) {
+  box.innerHTML =
+    '<div class="status-box status-fail">' +
+    '<strong>ส่งอัตโนมัติไม่สำเร็จ</strong> (' + escapeHtml(reason) + ')<br>' +
+    'กดปุ่มด้านล่างเพื่อคัดลอกคำตอบ แล้วส่งให้เจ้าของแบบฟอร์มทางแชทได้เลยนะ 💕' +
+    '<textarea class="copy-area" id="copyArea" readonly>' + escapeHtml(text) + '</textarea>' +
+    '<button class="btn-copy" id="copyBtn">คัดลอกคำตอบ 📋</button>' +
+    '</div>';
+  document.getElementById('copyBtn').onclick = function() {
+    var ta = document.getElementById('copyArea');
+    var done = function() { document.getElementById('copyBtn').textContent = 'คัดลอกแล้ว ✓'; };
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(ta.value).then(done, function() { ta.select(); document.execCommand('copy'); done(); });
+    } else { ta.select(); document.execCommand('copy'); done(); }
+  };
+}
+function escapeHtml(s) {
+  return String(s).replace(/[&<>"']/g, function(c) {
+    return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];
+  });
+}
+
+/* ---------- เอฟเฟกต์หัวใจ/ดอกไม้ตกลงมา ---------- */
+var petals = ['💗','💖','💕','🌸','🌷','🌺','🌼','💮','🩷','🤍','🌹','✨'];
+var fallLayer = document.getElementById('fallLayer');
+
+function spawnPetal() {
+  if (fallLayer.children.length > 45) return;
+  var el = document.createElement('div');
+  el.className = 'fall';
+  el.textContent = petals[Math.floor(Math.random() * petals.length)];
+  var size = 14 + Math.random() * 20;
+  var dur = 8 + Math.random() * 8;
+  el.style.left = (Math.random() * 100) + 'vw';
+  el.style.fontSize = size + 'px';
+  el.style.animationDuration = dur + 's';
+  el.style.opacity = 0.55 + Math.random() * 0.4;
+  el.style.setProperty('--sway', ((Math.random() - 0.5) * 160) + 'px');
+  el.style.setProperty('--rot', ((Math.random() - 0.5) * 360) + 'deg');
+  el.addEventListener('animationend', function() { el.remove(); });
+  fallLayer.appendChild(el);
+}
+function heartRain(n) { for (var i = 0; i < n; i++) setTimeout(spawnPetal, i * 60); }
+
+if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+  heartRain(18);
+  setInterval(spawnPetal, 450);
+}
+
+// แตะ/คลิกแล้วมีหัวใจเด้งออกมา
+document.addEventListener('pointerdown', function(e) {
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  var tag = e.target.tagName;
+  if (tag === 'TEXTAREA' || tag === 'INPUT' || tag === 'SELECT') return;
+  for (var i = 0; i < 6; i++) {
+    var b = document.createElement('div');
+    b.className = 'burst';
+    b.textContent = ['💗','💖','🌸','💕'][Math.floor(Math.random() * 4)];
+    b.style.left = e.clientX + 'px';
+    b.style.top = e.clientY + 'px';
+    b.style.fontSize = (12 + Math.random() * 10) + 'px';
+    var ang = Math.random() * Math.PI * 2, dist = 30 + Math.random() * 50;
+    b.style.setProperty('--dx', Math.cos(ang) * dist + 'px');
+    b.style.setProperty('--dy', Math.sin(ang) * dist - 20 + 'px');
+    b.addEventListener('animationend', function() { this.remove(); });
+    document.body.appendChild(b);
+  }
+});
+
+initPage();
+</script>
+</body>
+</html>
